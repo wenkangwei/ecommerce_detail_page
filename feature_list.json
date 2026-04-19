@@ -14,7 +14,7 @@
         "Run init.sh and verify both backend and frontend servers start without errors",
         "Verify git repo initialized with initial commit"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F002",
@@ -26,7 +26,7 @@
         "Visit http://localhost:8000/health — returns {\"code\": 0, \"data\": {\"status\": \"healthy\"}}",
         "Verify CORS headers present for http://localhost:5173"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F003",
@@ -38,7 +38,7 @@
         "Visit http://localhost:5173 — renders without console errors",
         "Verify TypeScript compilation succeeds"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F004",
@@ -50,7 +50,7 @@
         "Verify data/ecommerce.db created with 5+ products",
         "Verify each product has seller, images, specs, and reviews"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F005",
@@ -63,7 +63,7 @@
         "Response format: {\"code\": 0, \"data\": {...}, \"message\": \"ok\"}",
         "404 returned for non-existent product"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F006",
@@ -75,7 +75,7 @@
         "Support query params: page, page_size, category",
         "Response includes total count and page metadata"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F007",
@@ -86,7 +86,7 @@
         "curl http://localhost:8000/api/v1/sellers/1 returns seller JSON",
         "Response includes: id, name, is_official, reputation, location, logo_url"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F008",
@@ -98,7 +98,7 @@
         "Each review includes: id, user, rating, title, content, date",
         "Supports pagination with page and page_size params"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F009",
@@ -110,7 +110,7 @@
         "Includes credit cards, debit cards, and digital wallets",
         "Each method has: id, name, type, icon_url, installments_available"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F010",
@@ -122,7 +122,7 @@
         "Access via http://localhost:8000/static/images/test.jpg",
         "Images load correctly in frontend"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F011",
@@ -135,7 +135,7 @@
         "Tests use test database fixture, not production data",
         "All tests pass"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F012",
@@ -148,7 +148,7 @@
         "Click thumbnail switches main image with transition",
         "Display image counter (e.g., 1/5)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F013",
@@ -161,7 +161,7 @@
         "Show star rating with numeric value",
         "Show review count as clickable link"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F014",
@@ -175,7 +175,7 @@
         "Show discount percentage badge",
         "Show installment info (e.g., '10 installments of $43.90')"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F015",
@@ -188,7 +188,7 @@
         "Show debit card and digital wallet options",
         "Collapsible section with 'See all payment methods' link"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F016",
@@ -201,7 +201,7 @@
         "Display seller name and reputation",
         "Show location and store link"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F017",
@@ -214,7 +214,7 @@
         "Display star distribution bar chart",
         "Show individual review cards with user, rating, title, content, date"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F018",
@@ -227,7 +227,7 @@
         "Show 'Free Shipping' badge when applicable",
         "Display estimated delivery date"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F019",
@@ -240,7 +240,7 @@
         "Each segment is a clickable link",
         "Last segment (product name) is not a link"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F020",
@@ -253,7 +253,7 @@
         "Support expandable section for long spec lists",
         "Show 'See all specifications' button"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F021",
@@ -266,7 +266,7 @@
         "Mobile (<768px): single column, stacked layout",
         "All components reflow properly at each breakpoint"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F022",
@@ -279,7 +279,7 @@
         "Image gallery, title, price, payment methods, seller, reviews, stock all visible",
         "No console errors"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F023",
@@ -292,7 +292,7 @@
         "Verify all API calls succeed",
         "Verify all UI sections render with correct data"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F024",
@@ -305,7 +305,7 @@
         "Test at 1440px width (desktop)",
         "No horizontal overflow or broken layouts at any size"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F025",
@@ -317,12 +317,12 @@
         "Docs include: index, quickstart, architecture, api-reference, modules, examples",
         "Documentation is browsable locally in browser"
       ],
-      "passes": false
+      "passes": true
     }
   ],
   "summary": {
     "total": 25,
-    "passing": 0,
-    "failing": 25
+    "passing": 25,
+    "failing": 0
   }
 }

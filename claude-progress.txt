@@ -22,3 +22,21 @@
 - **Working**: Basic project skeleton
 - **Broken**: Nothing yet
 - **Next**: Start implementing features from feature_list.json in priority order (F001 → F025)
+
+## Session 2 — Coding Agent
+- **Date**: 2026-04-19
+- **Agent**: coder
+- **Status**: All features complete
+- **Done**:
+  - Implemented full backend: FastAPI + SQLAlchemy + SQLite with 5 routers
+  - Created 6 database models, Pydantic schemas, seed script with 6 products
+  - 12/12 backend tests passing
+  - Implemented full frontend: React + Vite + TypeScript with 8 components
+  - Created MercadoLibre-style CSS with responsive breakpoints
+  - Generated MkDocs documentation (6 pages)
+  - Created auto_run.sh automation script
+  - Created 4 design documents (style, mechanism, backend, run)
+  - All 25/25 features marked as passing
+- **Working**: Everything — backend API, frontend UI, tests, docs
+- **Broken**: Nothing
+- **Next**: Project is complete. Run `./init.sh` to start both servers
