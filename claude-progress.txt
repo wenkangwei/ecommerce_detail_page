@@ -1,0 +1,24 @@
+# Agent Progress Log
+# ===================
+# Project: ecommerce-detail
+# Created: 2026-04-19
+#
+# Format: Each agent session appends an entry below.
+# Include: what you did, what works, what's broken, and what's next.
+# This file is the PRIMARY communication channel between agent sessions.
+# =======================================================================
+
+## Session 1 — Initializer Agent
+- **Date**: 2026-04-19
+- **Agent**: initializer
+- **Status**: Project scaffolded
+- **Done**:
+  - Created project structure with backend/ and frontend/
+  - Set up feature_list.json with 25 features
+  - Created CLAUDE.md with development standards
+  - Created init.sh development script
+  - Created auto_run.sh automation script
+  - Initial git commit
+- **Working**: Basic project skeleton
+- **Broken**: Nothing yet
+- **Next**: Start implementing features from feature_list.json in priority order (F001 → F025)

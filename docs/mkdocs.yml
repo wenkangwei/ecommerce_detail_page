@@ -1,0 +1,23 @@
+site_name: E-Commerce Detail Page
+site_description: MercadoLibre-style e-commerce product detail page
+site_author: AI Agent
+
+theme:
+  name: material
+  palette:
+    primary: blue
+    accent: light blue
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.follow
+    - search.suggest
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - Architecture: architecture.md
+  - API Reference: api-reference.md
+  - Module Design: modules.md
+  - Usage Examples: examples.md

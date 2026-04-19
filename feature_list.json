@@ -1,0 +1,328 @@
+{
+  "project": "ecommerce-detail",
+  "created_at": "2026-04-19",
+  "description": "MercadoLibre-style e-commerce product detail page with React frontend, FastAPI backend, and SQLite database",
+  "features": [
+    {
+      "id": "F001",
+      "category": "setup",
+      "priority": 1,
+      "description": "Project skeleton initialized — monorepo structure, git, init.sh runs both servers",
+      "steps": [
+        "Verify all directories exist: backend/app/routers, frontend/src/components, scripts, docs/docs, data",
+        "Verify CLAUDE.md, feature_list.json, claude-progress.txt exist",
+        "Run init.sh and verify both backend and frontend servers start without errors",
+        "Verify git repo initialized with initial commit"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F002",
+      "category": "setup",
+      "priority": 2,
+      "description": "Backend API skeleton — FastAPI with /health endpoint and CORS configured",
+      "steps": [
+        "Run: cd backend && python -m uvicorn app.main:app --port 8000",
+        "Visit http://localhost:8000/health — returns {\"code\": 0, \"data\": {\"status\": \"healthy\"}}",
+        "Verify CORS headers present for http://localhost:5173"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F003",
+      "category": "setup",
+      "priority": 2,
+      "description": "Frontend skeleton — React + Vite + TypeScript renders without errors",
+      "steps": [
+        "Run: cd frontend && npm run dev",
+        "Visit http://localhost:5173 — renders without console errors",
+        "Verify TypeScript compilation succeeds"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F004",
+      "category": "data",
+      "priority": 3,
+      "description": "Database schema and seed data — SQLite with products, sellers, reviews, payment methods",
+      "steps": [
+        "Run seed script: cd backend && python -m app.seed",
+        "Verify data/ecommerce.db created with 5+ products",
+        "Verify each product has seller, images, specs, and reviews"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F005",
+      "category": "api",
+      "priority": 4,
+      "description": "Product detail API — GET /api/v1/products/{id} returns full product with seller, images, specs",
+      "steps": [
+        "curl http://localhost:8000/api/v1/products/1 returns product JSON",
+        "Response includes: id, title, description, price, original_price, images[], seller{}, specs[]",
+        "Response format: {\"code\": 0, \"data\": {...}, \"message\": \"ok\"}",
+        "404 returned for non-existent product"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F006",
+      "category": "api",
+      "priority": 5,
+      "description": "Product listing API — GET /api/v1/products with pagination and category filter",
+      "steps": [
+        "curl http://localhost:8000/api/v1/products returns paginated list",
+        "Support query params: page, page_size, category",
+        "Response includes total count and page metadata"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F007",
+      "category": "api",
+      "priority": 5,
+      "description": "Seller API — GET /api/v1/sellers/{id} returns seller profile",
+      "steps": [
+        "curl http://localhost:8000/api/v1/sellers/1 returns seller JSON",
+        "Response includes: id, name, is_official, reputation, location, logo_url"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F008",
+      "category": "api",
+      "priority": 5,
+      "description": "Reviews API — GET /api/v1/products/{id}/reviews returns paginated reviews",
+      "steps": [
+        "curl http://localhost:8000/api/v1/products/1/reviews returns reviews",
+        "Each review includes: id, user, rating, title, content, date",
+        "Supports pagination with page and page_size params"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F009",
+      "category": "api",
+      "priority": 5,
+      "description": "Payment methods API — GET /api/v1/payment-methods returns available methods",
+      "steps": [
+        "curl http://localhost:8000/api/v1/payment-methods returns list",
+        "Includes credit cards, debit cards, and digital wallets",
+        "Each method has: id, name, type, icon_url, installments_available"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F010",
+      "category": "api",
+      "priority": 5,
+      "description": "Static image serving — product images served from /static/images/",
+      "steps": [
+        "Place test image in backend/static/images/",
+        "Access via http://localhost:8000/static/images/test.jpg",
+        "Images load correctly in frontend"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F011",
+      "category": "test",
+      "priority": 6,
+      "description": "Backend unit tests — all endpoints tested with pytest and httpx AsyncClient",
+      "steps": [
+        "cd backend && python -m pytest tests/ -v",
+        "Tests cover: products, sellers, reviews, payment-methods endpoints",
+        "Tests use test database fixture, not production data",
+        "All tests pass"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F012",
+      "category": "ui",
+      "priority": 7,
+      "description": "Image gallery component — main image + thumbnails, click to switch",
+      "steps": [
+        "Render ImageGallery with product images array",
+        "Main image displays first image by default",
+        "Click thumbnail switches main image with transition",
+        "Display image counter (e.g., 1/5)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F013",
+      "category": "ui",
+      "priority": 7,
+      "description": "Product info component — title, description, rating stars, review count",
+      "steps": [
+        "Render ProductInfo with product data",
+        "Display title, short description, full description",
+        "Show star rating with numeric value",
+        "Show review count as clickable link"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F014",
+      "category": "ui",
+      "priority": 7,
+      "description": "Price block component — current price, original price, discount badge, installments",
+      "steps": [
+        "Render PriceBlock with price data",
+        "Show current price prominently",
+        "Show original price with strikethrough when discount exists",
+        "Show discount percentage badge",
+        "Show installment info (e.g., '10 installments of $43.90')"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F015",
+      "category": "ui",
+      "priority": 7,
+      "description": "Payment methods component — credit/debit cards, installments, digital wallets",
+      "steps": [
+        "Render PaymentMethods with payment data from API",
+        "Show credit card options with installment plans",
+        "Show debit card and digital wallet options",
+        "Collapsible section with 'See all payment methods' link"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F016",
+      "category": "ui",
+      "priority": 7,
+      "description": "Seller card component — official store badge, name, reputation indicator",
+      "steps": [
+        "Render SellerCard with seller data",
+        "Show official store badge when is_official is true",
+        "Display seller name and reputation",
+        "Show location and store link"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F017",
+      "category": "ui",
+      "priority": 8,
+      "description": "Reviews section component — star distribution bar and individual review cards",
+      "steps": [
+        "Render ReviewsSection with reviews data",
+        "Show average rating and total count",
+        "Display star distribution bar chart",
+        "Show individual review cards with user, rating, title, content, date"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F018",
+      "category": "ui",
+      "priority": 8,
+      "description": "Stock and shipping component — availability badge, free shipping, delivery estimate",
+      "steps": [
+        "Render StockShipping with product stock data",
+        "Show stock availability with green 'In Stock' badge",
+        "Show 'Free Shipping' badge when applicable",
+        "Display estimated delivery date"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F019",
+      "category": "ui",
+      "priority": 8,
+      "description": "Breadcrumb navigation — category path with clickable links",
+      "steps": [
+        "Render Breadcrumb with category path",
+        "Display path: Home > Category > Subcategory > Product",
+        "Each segment is a clickable link",
+        "Last segment (product name) is not a link"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F020",
+      "category": "ui",
+      "priority": 8,
+      "description": "Product specifications component — expandable spec table with key-value pairs",
+      "steps": [
+        "Render ProductSpecs with specifications data",
+        "Display specs in a clean table layout",
+        "Support expandable section for long spec lists",
+        "Show 'See all specifications' button"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F021",
+      "category": "ui",
+      "priority": 9,
+      "description": "Responsive layout — mobile/tablet/desktop breakpoints matching MercadoLibre style",
+      "steps": [
+        "Desktop (>1024px): two-column layout with image gallery left, info right",
+        "Tablet (768-1024px): adjusted column widths",
+        "Mobile (<768px): single column, stacked layout",
+        "All components reflow properly at each breakpoint"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F022",
+      "category": "integration",
+      "priority": 10,
+      "description": "Product detail page — wire all components, fetch from API, render complete page",
+      "steps": [
+        "Navigate to /products/1 in browser",
+        "All components render with real API data",
+        "Image gallery, title, price, payment methods, seller, reviews, stock all visible",
+        "No console errors"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F023",
+      "category": "integration",
+      "priority": 11,
+      "description": "End-to-end test — backend serves data, frontend renders all sections correctly",
+      "steps": [
+        "Start both servers",
+        "Load product page for product ID 1",
+        "Verify all API calls succeed",
+        "Verify all UI sections render with correct data"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F024",
+      "category": "integration",
+      "priority": 11,
+      "description": "Responsive design verification — all breakpoints work without layout issues",
+      "steps": [
+        "Test at 375px width (mobile)",
+        "Test at 768px width (tablet)",
+        "Test at 1440px width (desktop)",
+        "No horizontal overflow or broken layouts at any size"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F025",
+      "category": "docs",
+      "priority": 12,
+      "description": "MkDocs documentation — architecture, API reference, quickstart, examples",
+      "steps": [
+        "Run mkdocs build without errors",
+        "Docs include: index, quickstart, architecture, api-reference, modules, examples",
+        "Documentation is browsable locally in browser"
+      ],
+      "passes": false
+    }
+  ],
+  "summary": {
+    "total": 25,
+    "passing": 0,
+    "failing": 25
+  }
+}
