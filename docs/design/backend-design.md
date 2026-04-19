@@ -24,8 +24,8 @@
 │  └──────────────────┬──────────────────────────┘ │
 │                     │                             │
 │  ┌──────────────────▼──────────────────────────┐ │
-│  │           Database Layer (SQLAlchemy)         │ │
-│  │   ORM Models  ──▶  SQLite (data/ecommerce.db)│ │
+│  │        Data Layer (JSON File Store)           │ │
+│  │   dict lookups  ◀──  backend/data/*.json     │ │
 │  └─────────────────────────────────────────────┘ │
 │                                                   │
 │  Static Files: /static/images/ → product images   │
@@ -39,8 +39,7 @@
 | Component | Choice | Reason |
 |-----------|--------|--------|
 | Framework | FastAPI | Async, auto OpenAPI docs, Pydantic integration |
-| ORM | SQLAlchemy 2.0 | Python standard ORM, async support |
-| Database | SQLite | Zero-config, file-based, perfect for demo |
+| Data Store | JSON files | Zero-config, human-readable, no database dependency |
 | Validation | Pydantic v2 | Integrated with FastAPI, type-safe schemas |
 | Testing | pytest + httpx | Async test client for FastAPI |
 | Server | uvicorn | ASGI server for FastAPI |
@@ -50,7 +49,6 @@
 ```
 fastapi>=0.110.0
 uvicorn>=0.29.0
-sqlalchemy>=2.0.0
 pydantic>=2.0.0
 httpx>=0.27.0          # for tests
 pytest>=8.0.0
@@ -59,7 +57,9 @@ pytest-asyncio>=0.23.0
 
 ---
 
-## 3. Database Schema
+## 3. Data Collections (JSON Files)
+
+Data is stored in `backend/data/*.json` files, each containing a JSON array of objects. All collections are loaded into an in-memory dict at startup via `init_store()` in `database.py`.
 
 ### Entity-Relationship Diagram
 
@@ -129,100 +129,43 @@ pytest-asyncio>=0.23.0
                        └──────────────────┘
 ```
 
-### SQLAlchemy Models
+### JSON Collections
 
-```python
-# models.py
+Data is stored as JSON arrays in `backend/data/`:
 
-class Seller(Base):
-    __tablename__ = "sellers"
+| File | Collection | Purpose |
+|------|-----------|---------|
+| `data/sellers.json` | sellers | Store/vendor profiles |
+| `data/products.json` | products | Product catalog items |
+| `data/product_images.json` | product_images | Product image URLs |
+| `data/product_specs.json` | product_specs | Generic key-value specs |
+| `data/reviews.json` | reviews | Customer reviews |
+| `data/payment_methods.json` | payment_methods | Payment options |
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(200))
-    is_official: Mapped[bool] = mapped_column(default=False)
-    reputation: Mapped[str] = mapped_column(String(100))
-    location: Mapped[str] = mapped_column(String(200))
-    logo_url: Mapped[str] = mapped_column(String(500))
-    created_at: Mapped[datetime]
+Each file contains a top-level JSON array of objects whose keys match the field names shown in the ER diagram above. Relationships are maintained via `id` / `seller_id` / `product_id` fields, resolved at query time through dict lookups in `database.py`.
 
-    products: Mapped[List["Product"]] = relationship(back_populates="seller")
-
-
-class Product(Base):
-    __tablename__ = "products"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(500))
-    description: Mapped[str] = mapped_column(Text)
-    price: Mapped[float]
-    original_price: Mapped[float]
-    currency: Mapped[str] = mapped_column(String(10), default="US$")
-    category: Mapped[str] = mapped_column(String(200))
-    subcategory: Mapped[str] = mapped_column(String(200))
-    stock: Mapped[int] = mapped_column(default=0)
-    rating_avg: Mapped[float] = mapped_column(default=0.0)
-    rating_count: Mapped[int] = mapped_column(default=0)
-    free_shipping: Mapped[bool] = mapped_column(default=False)
-    warranty_months: Mapped[int] = mapped_column(default=12)
-    seller_id: Mapped[int] = mapped_column(ForeignKey("sellers.id"))
-    created_at: Mapped[datetime]
-    updated_at: Mapped[datetime]
-
-    seller: Mapped["Seller"] = relationship(back_populates="products")
-    images: Mapped[List["ProductImage"]] = relationship(back_populates="product",
-                                                          order_by="ProductImage.sort_order")
-    specs: Mapped[List["ProductSpec"]] = relationship(back_populates="product",
-                                                       order_by="ProductSpec.sort_order")
-    reviews: Mapped[List["Review"]] = relationship(back_populates="product")
-
-
-class ProductImage(Base):
-    __tablename__ = "product_images"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
-    url: Mapped[str] = mapped_column(String(500))
-    alt_text: Mapped[str] = mapped_column(String(200))
-    sort_order: Mapped[int] = mapped_column(default=0)
-
-    product: Mapped["Product"] = relationship(back_populates="images")
-
-
-class ProductSpec(Base):
-    __tablename__ = "product_specs"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
-    spec_key: Mapped[str] = mapped_column(String(200))
-    spec_value: Mapped[str] = mapped_column(String(500))
-    sort_order: Mapped[int] = mapped_column(default=0)
-
-    product: Mapped["Product"] = relationship(back_populates="specs")
-
-
-class Review(Base):
-    __tablename__ = "reviews"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
-    user_name: Mapped[str] = mapped_column(String(100))
-    rating: Mapped[int]                         # 1-5
-    title: Mapped[str] = mapped_column(String(200))
-    content: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime]
-
-    product: Mapped["Product"] = relationship(back_populates="reviews")
-
-
-class PaymentMethod(Base):
-    __tablename__ = "payment_methods"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
-    type: Mapped[str] = mapped_column(String(50))  # credit_card, debit_card, digital_wallet
-    icon_url: Mapped[str] = mapped_column(String(500))
-    max_installments: Mapped[int] = mapped_column(default=1)
-    sort_order: Mapped[int] = mapped_column(default=0)
+**Example** -- a single product in `data/products.json`:
+```json
+[
+  {
+    "id": 1,
+    "title": "Samsung Galaxy A55 5G 256GB Dark Blue 8GB RAM",
+    "description": "Experience the power of 5G...",
+    "price": 439.00,
+    "original_price": 499.00,
+    "currency": "US$",
+    "category": "Smartphones",
+    "subcategory": "Cell Phones",
+    "stock": 15,
+    "rating_avg": 4.8,
+    "rating_count": 950,
+    "free_shipping": true,
+    "warranty_months": 12,
+    "seller_id": 1,
+    "created_at": "2024-01-15T10:00:00",
+    "updated_at": "2025-01-15T10:00:00"
+  }
+]
 ```
 
 ---
@@ -479,18 +422,37 @@ class ApiResponse(BaseModel, Generic[T]):
 ```python
 # database.py
 
-DATABASE_URL = "sqlite:///./data/ecommerce.db"
+import json
+from pathlib import Path
 
-engine = create_async_engine(DATABASE_URL, echo=False)
-async_session = async_sessionmaker(engine, class_=AsyncSession)
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session() as session:
-        yield session
+# In-memory store: dict[str, list[dict]]
+_store: dict[str, list[dict]] = {}
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+
+def init_store() -> None:
+    """Load all JSON collections into memory at startup."""
+    for path in DATA_DIR.glob("*.json"):
+        _store[path.stem] = json.loads(path.read_text(encoding="utf-8"))
+
+
+def get_collection(name: str) -> list[dict]:
+    """Return a collection by file stem name (e.g. 'products')."""
+    return _store.get(name, [])
+
+
+def find_by_id(collection: str, item_id: int) -> dict | None:
+    """Look up a single item by its 'id' field."""
+    for item in get_collection(collection):
+        if item.get("id") == item_id:
+            return item
+    return None
+
+
+def find_many(collection: str, field: str, value) -> list[dict]:
+    """Return all items where item[field] == value."""
+    return [item for item in get_collection(collection) if item.get(field) == value]
 ```
 
 ```python
@@ -525,7 +487,7 @@ app.include_router(payments.router, prefix="/api/v1")
 
 ## 7. Seed Data
 
-The seed script (`app/seed.py`) creates realistic demo data:
+The seed script (`app/seed.py`) writes realistic demo data to JSON files in `backend/data/`:
 
 ### Sellers (3)
 | ID | Name | Official | Reputation |
@@ -593,10 +555,10 @@ backend/tests/
 └── test_payments.py     # GET /payment-methods
 ```
 
-### Test Database
-- Use in-memory SQLite (`sqlite+aiosqlite://`) for tests
-- Seed test data in `conftest.py` fixture
-- Each test gets a fresh database
+### Test Data Store
+- Use in-memory store populated from seed data in `conftest.py` fixture
+- `init_store()` is called before each test to load JSON collections
+- Each test gets a fresh in-memory copy of the seed data
 
 ### Test Cases per Endpoint
 1. **Happy path**: valid ID → 200 with correct data shape
@@ -620,10 +582,9 @@ backend/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py            # FastAPI app, CORS, routers, static files
-│   ├── database.py        # Engine, session, init_db
-│   ├── models.py          # SQLAlchemy ORM models
+│   ├── database.py        # JSON file loader, init_store, helper lookups
 │   ├── schemas.py         # Pydantic request/response schemas
-│   ├── seed.py            # Database seeding script
+│   ├── seed.py            # JSON file seeding script
 │   └── routers/
 │       ├── __init__.py
 │       ├── products.py     # Product endpoints
@@ -635,6 +596,13 @@ backend/
 │       ├── products/       # Product images
 │       ├── sellers/        # Seller logos
 │       └── payments/       # Payment method icons
+├── data/                   # JSON data files (created by seed.py)
+│   ├── sellers.json
+│   ├── products.json
+│   ├── product_images.json
+│   ├── product_specs.json
+│   ├── reviews.json
+│   └── payment_methods.json
 └── tests/
     ├── conftest.py
     ├── test_products.py

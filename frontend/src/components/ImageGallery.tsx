@@ -14,6 +14,21 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
 
   return (
     <div className="image-gallery">
+      {/* Vertical thumbnail strip */}
+      <div className="gallery-thumbs-vertical">
+        {images.map((img, idx) => (
+          <button
+            key={img.id}
+            className={`gallery-thumb ${idx === selectedIdx ? 'active' : ''}`}
+            onMouseEnter={() => setSelectedIdx(idx)}
+            onClick={() => setSelectedIdx(idx)}
+          >
+            <img src={img.url} alt={img.alt_text} />
+          </button>
+        ))}
+      </div>
+
+      {/* Main image */}
       <div className="gallery-main">
         <img
           src={images[selectedIdx].url}
@@ -21,17 +36,6 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           className="gallery-main-img"
         />
         <span className="gallery-counter">{selectedIdx + 1}/{images.length}</span>
-      </div>
-      <div className="gallery-thumbnails">
-        {images.map((img, idx) => (
-          <button
-            key={img.id}
-            className={`gallery-thumb ${idx === selectedIdx ? 'active' : ''}`}
-            onClick={() => setSelectedIdx(idx)}
-          >
-            <img src={img.url} alt={img.alt_text} />
-          </button>
-        ))}
       </div>
     </div>
   );

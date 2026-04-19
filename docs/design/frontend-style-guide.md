@@ -67,181 +67,180 @@
 
 ### Page Layout (Desktop > 1024px)
 ```
-┌──────────────────────────────────────────────────────┐
-│  Breadcrumb (12px, #666666)                          │
-├────────────────────────────┬─────────────────────────┤
-│                            │                         │
-│  Image Gallery (480px)     │  Price Block            │
-│  - Main image              │  - Current price 36px   │
-│  - Thumbnail strip         │  - Original price       │
-│                            │  - Discount badge        │
-│                            │  - Installment info      │
-│                            ├─────────────────────────┤
-│                            │  Stock & Shipping        │
-│                            │  - Green "In Stock"      │
-│                            │  - Free Shipping badge   │
-│                            ├─────────────────────────┤
-│                            │  Seller Card             │
-│                            │  - Official badge        │
-│                            │  - Seller name           │
-│                            ├─────────────────────────┤
-│                            │  Payment Methods         │
-│                            │  - Card icons            │
-│                            │  - Installment options   │
-│                            │                         │
-├────────────────────────────┴─────────────────────────┤
-│                                                      │
-│  Product Description                                  │
-│  - Title 18px                                         │
-│  - Full description text 14px                         │
-│                                                      │
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│  Product Specifications (key-value table)             │
-│                                                      │
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│  Reviews Section                                      │
-│  - Average rating + star distribution                 │
-│  - Individual review cards                            │
-│                                                      │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│  Breadcrumb (12px, #666666)                                              │
+├─────────────────┬──────────────────────────┬─────────────────────────────┤
+│                 │                          │                             │
+│  Image Gallery  │  Product Info            │  Purchase Panel             │
+│  (440px)        │  (flex-1)                │  (320px)                    │
+│                 │                          │                             │
+│  ┌────┐ ┌────┐ │  ★ Official Store badge  │  Free Shipping badge (green)│
+│  │thumb│ │Main│ │  Product Title 22px      │  Stock indicator (● In Stock)│
+│  │ 1  │ │    │ │  Rating ★★★★☆ (4.8)      │  Quantity: 1 unit           │
+│  │ 2  │ │    │ │                          │  ┌─────────────────────┐    │
+│  │ 3  │ │Img │ │  Price Block:            │  │  [  Buy now  ]      │    │
+│  │ 4  │ │    │ │   US$ 499 ─── 12% OFF    │  │  [ Add to cart ]    │    │
+│  │ 5  │ │    │ │   US$ 439                │  └─────────────────────┘    │
+│  └────┘ └────┘ │   10x US$ 43.90 no int  │  Seller Card                 │
+│  (vertical     │                          │  🛡️ Buyer protection         │
+│   thumbnails)  │  ✓ Highlight 1           │  🔄 Free returns             │
+│                │  ✓ Highlight 2           │  🏆 Factory warranty         │
+│                │  ✓ Highlight 3           │  Payment Methods             │
+│                │  View characteristics     │  - Credit/debit cards        │
+│                │                          │  - Digital wallets           │
+├─────────────────┴──────────────────────────┴─────────────────────────────┤
+│                                                                          │
+│  Characteristics (expandable spec table)                                  │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Product description                                                      │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Reviews Section                                                          │
+│  - Average rating + star distribution                                     │
+│  - Individual review cards                                                │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Grid System
 - **Max content width**: `1200px`, centered
-- **Left column**: `~60%` (image gallery + description + specs)
-- **Right column**: `~40%` (price, stock, seller, payments — "sidebar")
-- **Column gap**: `32px`
+- **3-column CSS Grid**: `grid-template-columns: 440px 1fr 320px`
+- **Column 1 (Gallery)**: `440px` fixed — vertical thumbnail strip + main image
+- **Column 2 (Product Info)**: `flex-1` — title, rating, price, highlights
+- **Column 3 (Purchase Panel)**: `320px` fixed — buy buttons, stock, seller, protection, payments
+- **Column borders**: `1px solid #E6E6E6` between columns
 - **Page padding**: `16px` on each side
 
 ### Responsive Breakpoints
 | Breakpoint | Layout | Column Behavior |
 |------------|--------|-----------------|
-| Desktop `>1024px` | Two-column | Left 60% / Right 40% |
-| Tablet `768-1024px` | Two-column compressed | Left 55% / Right 45%, smaller images |
-| Mobile `<768px` | Single column | Right column stacks below image |
+| Desktop `>1024px` | Three-column | Gallery 440px / Info flex / Purchase 320px |
+| Tablet `768-1024px` | Three-column compressed | Gallery 320px / Info flex / Purchase 260px |
+| Mobile `<768px` | Single column | Everything stacks vertically |
 
 ---
 
 ## 4. Component Specifications
 
 ### 4.1 Breadcrumb
-- **Position**: Top of content area, above the two-column layout
+- **Position**: Top of content area, above the 3-column layout
 - **Style**: Inline text links separated by `›` (chevron)
 - **Font**: `12px`, `#666666`
 - **Link hover**: `#3483FA` (blue), underline
 - **Last item**: Not a link, `#999999`
 - **Example**: `Celulares y Smartphones › Celulares Libres › Samsung`
 
-### 4.2 Image Gallery
+### 4.2 Image Gallery (Column 1)
+- **Layout**: Vertical thumbnail strip on the left, main image on the right
 - **Main image**:
-  - Size: `480px × 480px` (desktop), full-width (mobile)
-  - Border: `none`
-  - Background: `#F5F5F5` (when image doesn't fill)
-  - Object-fit: `contain`
+  - Size: fills remaining space after thumbnails (min-height `400px`)
+  - Background: `#FFFFFF`
+  - Object-fit: `contain`, max-height `440px`
 - **Thumbnail strip**:
-  - Position: Below main image
-  - Size: `56px × 56px` each
-  - Border: `1px solid #E6E6E6` (default), `2px solid #3483FA` (selected)
-  - Gap: `8px`
-  - Horizontal scroll on mobile
-- **Image counter**: Top-right corner, `12px`, `#666666`, format: `1/5`
-- **No arrows** — thumbnail click only (matching reference)
+  - Position: **Left side** of gallery, vertical (`flex-direction: column`)
+  - Width: `52px` strip
+  - Thumb size: `48px × 48px`
+  - Border: `1px solid #E6E6E6` (default), `2px solid #3483FA` (active/hovered)
+  - Gap: `6px`
+  - Max height: `440px` with vertical scroll
+  - Horizontal scroll on mobile (flex-direction becomes row)
+- **Image counter**: Bottom-right corner, `rgba(0,0,0,0.55)` pill, `#FFFFFF`, `11px`
+  - Format: `1/5`
+- **Thumbnail switch**: `onMouseEnter` and `onClick` — no arrows
 
-### 4.3 Product Title & Info
-- **Title**: `24px`, `#333333`, wraps to multiple lines
+### 4.3 Product Info (Column 2)
+- **Official badge**: Pill badge with star icon, `--color-primary-light` bg, `12px`
+  - Example: `★ Official Samsung Official Store`
+- **Title**: `22px`, `#282828`, `font-weight: 400`, wraps to multiple lines
 - **Rating**:
   - Stars: `14px`, gold filled `#FFD700`, gray empty `#E0E6ED`
   - Numeric: `14px`, `#666666` (e.g., "4.8")
-  - Review count: `14px`, `#3483FA` link (e.g., "950 reviews")
-- **Short features**: Below rating, icon + text list
-  - Each item: `14px`, `#333333`
-  - Bullet points with small icons (checkmark, etc.)
+  - Review count: `14px`, `#3483FA` link (e.g., "(950 reviews)")
+- **Price Block**:
+  - Current price: `32px`, `#000000`
+  - Original price: `14px`, `#999999`, `text-decoration: line-through`
+  - Discount badge: `13px`, `#00A650`, `#e8f5e9` background pill, format: "12% OFF"
+  - Installment: `14px`, `#666666`, "without interest" in `#00A650` green
+- **Highlights**: Below price, top 3 specs as checkmark list
+  - Each item: `13px`, `#666666`, with `✓` green icon
+- **View characteristics link**: `14px`, `#3483FA`, anchors to specs section
 
-### 4.4 Price Block
-- **Current price**: `36px`, `#000000`, no bold
-- **Original price**: `16px`, `#999999`, `text-decoration: line-through`
-- **Discount badge**:
-  - Text: `14px`, `#00A650` (green, not orange), format: "12% OFF"
-  - No background, just colored text
-- **Installment line**:
-  - Text: `14px`, `#666666`
-  - Format: "in 10 installments of $43.90 without interest"
-  - "without interest" in `#00A650` green
+### 4.4 Purchase Panel (Column 3)
 
-### 4.5 Stock & Shipping
-- **Stock badge**:
-  - Text: "In Stock", `14px`, `#00A650`
-  - Icon: small checkmark circle, green
+#### Stock & Shipping
 - **Free shipping badge**:
-  - Text: "Free Shipping", `14px`, `#00A650`
-  - Icon: small truck icon, green
-  - Subtitle: "to all country", `12px`, `#666666`
-- **Delivery estimate**:
-  - Format: "Estimated delivery between Apr 25 - Apr 28"
-  - Font: `14px`, `#666666`
-- **Divider**: `1px solid #E6E6E6` between stock/shipping/delivery rows
-- **Internal padding**: `16px`
-- **Background**: `#FFFFFF`
-- **Border**: `1px solid #E6E6E6`, `border-radius: 6px`
+  - Green background (`#f0faf4`), truck SVG icon + "Free shipping" text
+  - `14px`, `#00A650` bold
+- **Stock indicator**:
+  - Green dot (`8px` circle, `#00A650`) + "In stock" text (`14px`, bold green)
+  - Quantity available: `13px`, `#666666`
+- **Quantity row**:
+  - Separated by top border
+  - "Quantity: 1 unit"
 
-### 4.6 Seller Card
-- **Official store badge**:
-  - Background: `#3483FA` (blue) pill/ribbon shape
-  - Text: "Official Store", `12px`, `#FFFFFF`, bold
-  - Position: above seller name
-- **Seller name**: `16px`, `#333333`, bold
-- **Seller info**: `14px`, `#666666`
-- **Link**: "See seller's store", `14px`, `#3483FA`
-- **Card style**: same as stock card — `border: 1px solid #E6E6E6`, `border-radius: 6px`
+#### Buy / Cart Buttons
+- **Buy now**: Full width, `background: #3483FA`, `color: #fff`, `16px` bold, `border-radius: 6px`
+  - Hover: `background: #2968C8`
+- **Add to cart**: Full width, `background: #E3F2FD`, `color: #3483FA`, `16px` bold
+  - Hover: `background: #3483FA`, `color: #fff`
 
-### 4.7 Payment Methods
-- **Section title**: "Payment methods", `14px`, `#333333`
-- **Card icons**: `40px × 24px`, grayscale, with labels below
-- **Installment highlight**:
-  - Green text: "up to 12 installments without interest"
-  - `14px`, `#00A650`
-- **Collapsible**: "See all payment methods" link, `14px`, `#3483FA`
-- **When expanded**: shows credit cards, debit cards, digital wallets in sections
+#### Seller Card
+- **Official store badge**: `background: #3483FA`, `color: #fff`, `10px` bold, uppercase
+- **Seller name**: `14px`, `#282828`, bold
+- **Sales info**: `12px`, `#666666`
+- **Store link**: `13px`, `#3483FA`
 
-### 4.8 Product Description
+#### Buyer Protection
+- Three items with emoji icons:
+  - 🛡️ Buyer protection — "Receive the product or get your money back"
+  - 🔄 Free returns — "30 days to return"
+  - 🏆 Factory warranty — "{warranty_months} months"
+- Each: icon `18px` + title `13px` bold + desc `12px`
+
+#### Payment Methods
+- Section title: `14px` bold
+- Installment banner: `13px`, "without interest" in green bold
+- Card icons: `44px × 28px` with border, colored by type
+  - Credit card: `#f0f4ff` background
+  - Debit card: `#f0fff0` background
+  - Digital wallet: `#e8f5e9` background
+- Expand button: `13px`, `#3483FA`
+
+### 4.5 Product Description (Full Width Below Grid)
 - **Section title**: "Product description", `18px`, `#333333`
-- **Body text**: `14px`, `#333333`, `line-height: 1.6`
-- **Max height**: `300px` with fade-out overlay, "See more" button
-- **When expanded**: full height, "See less" button
+- **Body text**: `14px`, `#333333`, `line-height: 1.7`
 
-### 4.9 Product Specifications
-- **Section title**: "Product specifications", `18px`, `#333333`
-- **Table layout**:
-  - Key column: `40%`, `14px`, `#999999`, `background: #F5F5F5`
-  - Value column: `60%`, `14px`, `#333333`
-  - Row height: `40px`
-  - Alternating row bg: `#F5F5F5` / `#FFFFFF`
-  - Row border: `none` (use background color difference)
-- **Expandable**: Show first 5 specs, "See all specifications" expands full list
-- **Button**: `14px`, `#3483FA`, no background, centered
+### 4.6 Product Specifications (Full Width Below Grid)
+- **Section title**: "Characteristics", `18px`, `#333333`
+- **Grid layout**: 2-column grid (`grid-template-columns: 1fr 1fr`)
+  - Outer border + border-radius `6px`
+  - Odd items: `background: #F5F5F5`
+  - Each item: key `12px #999999` + value `14px #282828` bold
+  - Border bottom between rows
+- **Expandable**: Show first 6 specs, "View all characteristics" button expands full list
+- **Expand button**: Full width, border top, `14px`, `#3483FA`
 
-### 4.10 Reviews Section
+### 4.7 Reviews Section (Full Width Below Grid)
 - **Section title**: "Reviews", `18px`, `#333333`
-- **Summary bar** (left side):
-  - Average: `48px`, `#333333`, bold
+- **2-column layout**: `grid-template-columns: 240px 1fr`
+- **Summary bar** (left side, sticky):
+  - Average: `48px`, `#282828`, bold
   - Stars: `16px`, gold
-  - Total: "950 reviews", `14px`, `#666666`
+  - Total: `14px`, `#666666`
   - Star distribution: horizontal bars
-    - 5 stars → green bar width proportional
-    - 4 stars, 3 stars, etc.
-    - Bar color: `#3483FA`
-    - Bar background: `#E6E6E6`
+    - Bar color: `#3483FA`, background: `#E6E6E6`
+    - Height: `6px`, border-radius `3px`
 - **Review cards** (right side):
-  - Avatar placeholder: `40px × 40px` circle, `#E6E6E6`
-  - User name: `14px`, `#333333`
+  - Avatar placeholder: `40px × 40px` circle, `#F5F5F5`
+  - User name: `14px`, bold
   - Date: `12px`, `#999999`
   - Rating: stars `14px`, gold
-  - Title: `14px`, `#333333`, bold
-  - Content: `14px`, `#333333`, `line-height: 1.6`
-  - Card padding: `16px`
-  - Card border: `1px solid #E6E6E6`, `border-radius: 6px`
+  - Title: `14px`, bold
+  - Content: `14px`, `line-height: 1.6`
+  - Card: `border: 1px solid #E6E6E6`, `border-radius: 6px`, `box-shadow: 0 1px 2px rgba(0,0,0,0.12)`
   - Gap between cards: `16px`
 
 ---
@@ -315,32 +314,38 @@ text-decoration: underline;
 
 ### Desktop (>1024px)
 ```
-┌───────────────────── 1200px max ─────────────────────┐
-│ Breadcrumb                                           │
-├──────────────── 60% ────────┬────── 40% ─────────────┤
-│ Image Gallery               │ Price Block            │
-│ (480px max)                 │ Stock & Shipping       │
-│                             │ Seller Card            │
-│                             │ Payment Methods        │
-├─────────────────────────────┴────────────────────────┤
-│ Description (full width)                              │
-├──────────────────────────────────────────────────────┤
-│ Specifications (full width)                           │
-├──────────────────────────────────────────────────────┤
-│ Reviews (full width)                                  │
-└──────────────────────────────────────────────────────┘
+┌───────────────────────── 1200px max ──────────────────────────┐
+│ Breadcrumb                                                     │
+├─────────── 440px ──────┬── flex ──┬────── 320px ──────────────┤
+│ Image Gallery           │ Product  │ Purchase Panel             │
+│ (vertical thumbs +      │ Info     │ - Free Shipping badge      │
+│  main image)            │ - Badge  │ - Stock indicator          │
+│                         │ - Title  │ - [Buy now]                │
+│                         │ - Rating │ - [Add to cart]            │
+│                         │ - Price  │ - Seller Card              │
+│                         │ - Feats  │ - Buyer Protection         │
+│                         │          │ - Payment Methods          │
+├─────────────────────────┴──────────┴───────────────────────────┤
+│ Characteristics (full width, 2-col grid)                        │
+├─────────────────────────────────────────────────────────────────┤
+│ Product description (full width)                                 │
+├─────────────────────────────────────────────────────────────────┤
+│ Reviews (full width, 240px summary + review cards)              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Tablet (768-1024px)
-- Content max-width: `100%` (full width with `16px` padding)
-- Left column: `55%`, Right column: `45%`
-- Image gallery: `360px` max
-- Font sizes stay the same
+- Grid: `320px | flex | 260px`
+- Smaller image gallery, compressed purchase panel
+- Font sizes reduce: title `18px`, price `26px`
 
 ### Mobile (<768px)
-- Single column, everything stacked
-- Image gallery: full width, smaller thumbnails
-- Right column items become full-width cards
+- Single column, everything stacks vertically
+- Image gallery: full width, thumbnails switch to horizontal scroll
+- No column borders
+- Purchase panel stacks below product info with top border
 - Buttons stretch to full width
-- Price font size reduces to `28px`
-- Product title reduces to `20px`
+- Price font size reduces to `26px`
+- Product title reduces to `18px`
+- Specs grid: single column
+- Reviews layout: single column (summary not sticky)

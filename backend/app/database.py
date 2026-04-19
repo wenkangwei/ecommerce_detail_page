@@ -1,29 +1,63 @@
+"""JSON file-based data store — replaces SQLite."""
+
+import json
 import logging
 from pathlib import Path
-
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-DB_DIR = Path(__file__).resolve().parent.parent / "data"
-DB_DIR.mkdir(exist_ok=True)
-DATABASE_URL = f"sqlite+aiosqlite:///{DB_DIR / 'ecommerce.db'}"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATA_DIR.mkdir(exist_ok=True)
 
-engine = create_async_engine(DATABASE_URL, echo=False)
-async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+STORE: dict[str, list[dict]] = {}
 
 
-class Base(DeclarativeBase):
-    pass
+def _path(name: str) -> Path:
+    return DATA_DIR / f"{name}.json"
 
 
-async def get_db():
-    async with async_session() as session:
-        yield session
+def load_store(name: str) -> list[dict]:
+    """Load a collection from JSON file."""
+    p = _path(name)
+    if p.exists():
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    return []
 
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database initialized")
+def save_store(name: str, data: list[dict]) -> None:
+    """Persist a collection to JSON file."""
+    with open(_path(name), "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def init_store() -> None:
+    """Load all collections into memory at startup."""
+    for name in ("products", "sellers", "reviews", "payment_methods"):
+        STORE[name] = load_store(name)
+        logger.info("Loaded %d %s from JSON", len(STORE[name]), name)
+
+    if not STORE["products"]:
+        logger.info("Data store empty — run: python -m app.seed")
+
+
+def get_collection(name: str) -> list[dict]:
+    """Get an in-memory collection."""
+    return STORE.get(name, [])
+
+
+def find_by_id(collection: str, item_id: int) -> dict | None:
+    """Find a single item by id."""
+    for item in get_collection(collection):
+        if item.get("id") == item_id:
+            return item
+    return None
+
+
+def find_all(collection: str, **filters) -> list[dict]:
+    """Find all items matching filters."""
+    results = get_collection(collection)
+    for key, value in filters.items():
+        results = [r for r in results if r.get(key) == value]
+    return results

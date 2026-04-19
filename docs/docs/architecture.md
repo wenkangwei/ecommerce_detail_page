@@ -20,30 +20,30 @@
 │  React Frontend   │      │  FastAPI Backend      │
 │  - Components     │◀────▶│  - REST API           │
 │  - TypeScript     │ API  │  - Pydantic schemas   │
-│  - CSS Styles     │      │  - SQLAlchemy ORM     │
+│  - CSS Styles     │      │  - JSON file store    │
 └──────────────────┘      └──────────┬───────────┘
                                      │
                                      ▼
                           ┌──────────────────────┐
-                          │  SQLite Database      │
-                          │  data/ecommerce.db    │
+                          │  JSON Data Files      │
+                          │  backend/data/*.json  │
                           └──────────────────────┘
 ```
 
 ## Frontend Architecture
 
-The frontend uses a simple, flat component architecture:
+The frontend uses a 3-column layout matching MercadoLibre's product detail page:
 
 ```
 ProductDetailPage (orchestrator)
 ├── Breadcrumb
-├── ImageGallery
-├── PriceBlock
-├── StockShipping
-├── SellerCard
-├── PaymentMethods
-├── ProductSpecs
-└── ReviewsSection
+├── ThreeColumnGrid
+│   ├── Column1: ImageGallery (vertical thumbnails + main image)
+│   ├── Column2: Product Info (badge, title, rating, price, highlights)
+│   └── Column3: Purchase Panel (stock, buttons, seller, protection, payments)
+├── ProductSpecs (full width, expandable 2-col grid)
+├── ProductDescription (full width)
+└── ReviewsSection (full width, 2-col: summary + cards)
     └── ReviewCard (repeated)
 ```
 
@@ -70,7 +70,7 @@ Router Layer (endpoints)
     ↓
 Schema Layer (Pydantic validation/serialization)
     ↓
-Database Layer (SQLAlchemy ORM)
+Data Layer (dict lookups on in-memory JSON store)
 ```
 
 ### API Design Principles
@@ -82,7 +82,7 @@ Database Layer (SQLAlchemy ORM)
 
 ### Database Schema
 
-6 tables with clean relationships:
+6 collections loaded from JSON files into an in-memory store at startup:
 
 ```
 sellers ← products ← product_images
@@ -97,7 +97,7 @@ Products use **generic key-value specs** (`product_specs`) to support any produc
 
 | Decision | Rationale |
 |----------|-----------|
-| SQLite over PostgreSQL | Zero-config, file-based, perfect for demo/prototype |
+| JSON files over database | Zero-config, human-readable, no DB dependency, perfect for demo/prototype |
 | Plain CSS over Tailwind | Full control to match MercadoLibre's exact visual style |
 | React hooks over Redux | Single page, no complex state management needed |
 | Generic specs table | Supports any product type without schema changes |

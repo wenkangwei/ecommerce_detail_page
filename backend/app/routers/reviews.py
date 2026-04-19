@@ -1,12 +1,8 @@
 import math
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from fastapi import APIRouter, Query
 
-from app.database import get_db
-from app.models import Review
+from app.database import find_all
 from app.schemas import ApiResponse, Pagination, ReviewDistribution, ReviewList, ReviewOut, ReviewSummary
 
 router = APIRouter(tags=["reviews"])
@@ -17,38 +13,34 @@ async def get_reviews(
     product_id: int,
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=50),
-    db: AsyncSession = Depends(get_db),
 ):
-    query = select(Review).where(Review.product_id == product_id).order_by(Review.created_at.desc())
-    count_query = select(func.count(Review.id)).where(Review.product_id == product_id)
+    all_reviews = find_all("reviews", product_id=product_id)
+    all_reviews.sort(key=lambda r: r.get("created_at", ""), reverse=True)
 
-    total_result = await db.execute(count_query)
-    total = total_result.scalar() or 0
-    total_pages = math.ceil(total / page_size)
+    total = len(all_reviews)
+    total_pages = math.ceil(total / page_size) if total > 0 else 0
+    start = (page - 1) * page_size
+    page_items = all_reviews[start:start + page_size]
 
-    query = query.offset((page - 1) * page_size).limit(page_size)
-    result = await db.execute(query)
-    reviews = result.scalars().all()
+    # Distribution
+    dist = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    for r in all_reviews:
+        rating = r.get("rating", 0)
+        if rating in dist:
+            dist[rating] += 1
 
-    # Compute distribution
-    dist_query = select(Review.rating, func.count(Review.id)).where(Review.product_id == product_id).group_by(Review.rating)
-    dist_result = await db.execute(dist_query)
-    dist_rows = dict(dist_result.all())
-
-    avg_query = select(func.avg(Review.rating)).where(Review.product_id == product_id)
-    avg_result = await db.execute(avg_query)
-    average = round(avg_result.scalar() or 0, 1)
+    average = round(sum(r.get("rating", 0) for r in all_reviews) / total, 1) if total > 0 else 0.0
 
     items = [
         ReviewOut(
-            id=r.id,
-            user_name=r.user_name,
-            rating=r.rating,
-            title=r.title,
-            content=r.content,
-            date=r.created_at.isoformat()[:10] if r.created_at else "",
+            id=r["id"],
+            user_name=r["user_name"],
+            rating=r["rating"],
+            title=r["title"],
+            content=r["content"],
+            date=r.get("created_at", "")[:10],
         )
-        for r in reviews
+        for r in page_items
     ]
 
     return ApiResponse(
@@ -58,11 +50,11 @@ async def get_reviews(
             summary=ReviewSummary(
                 average=average,
                 distribution=ReviewDistribution(
-                    star_5=dist_rows.get(5, 0),
-                    star_4=dist_rows.get(4, 0),
-                    star_3=dist_rows.get(3, 0),
-                    star_2=dist_rows.get(2, 0),
-                    star_1=dist_rows.get(1, 0),
+                    star_5=dist[5],
+                    star_4=dist[4],
+                    star_3=dist[3],
+                    star_2=dist[2],
+                    star_1=dist[1],
                 ),
             ),
         )

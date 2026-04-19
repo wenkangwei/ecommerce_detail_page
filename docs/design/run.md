@@ -12,7 +12,6 @@
 | Node.js | 18+ | `node --version` |
 | npm | 9+ | `npm --version` |
 | Git | 2.0+ | `git --version` |
-| SQLite | 3.x | `sqlite3 --version` |
 
 ---
 
@@ -46,7 +45,7 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Seed the database (creates data/ecommerce.db with demo data)
+# Seed the data files (creates backend/data/*.json with demo data)
 python -m app.seed
 
 # Start backend server
@@ -98,13 +97,13 @@ npm run build
 
 ---
 
-## Seeding the Database
+## Seeding the Data Files
 
 ```bash
 cd /home/wwk/workspace/ai_project/ecommerce-detail/backend
 source .venv/bin/activate
 
-# Seed (or re-seed) — deletes existing data and inserts fresh demo data
+# Seed (or re-seed) — overwrites existing JSON files with fresh demo data
 python -m app.seed
 ```
 
@@ -138,7 +137,6 @@ Swagger UI: `http://localhost:8000/docs`
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | `sqlite:///./data/ecommerce.db` | SQLite database path |
 | `CORS_ORIGIN` | `http://localhost:5173` | Allowed frontend origin |
 
 ### Frontend (optional, defaults provided)
@@ -196,11 +194,17 @@ ecommerce-detail/
 ├── backend/                 # FastAPI backend
 │   ├── app/
 │   │   ├── main.py          # App entry point
-│   │   ├── database.py      # SQLite connection
-│   │   ├── models.py        # ORM models
+│   │   ├── database.py      # JSON file loader, init_store, helper lookups
 │   │   ├── schemas.py       # Pydantic schemas
 │   │   ├── routers/         # API endpoints
-│   │   └── seed.py          # Database seeder
+│   │   └── seed.py          # JSON file seeder
+│   ├── data/                # JSON data files (created by seed.py)
+│   │   ├── sellers.json
+│   │   ├── products.json
+│   │   ├── product_images.json
+│   │   ├── product_specs.json
+│   │   ├── reviews.json
+│   │   └── payment_methods.json
 │   ├── static/              # Static image files
 │   ├── tests/               # Backend tests
 │   ├── requirements.txt
@@ -220,7 +224,7 @@ ecommerce-detail/
 │   ├── mkdocs.yml
 │   └── docs/
 │       └── design/          # Design specification docs
-└── data/                    # SQLite database (gitignored)
+└── data/                    # JSON data files (gitignored)
 ```
 
 ---
@@ -232,6 +236,6 @@ ecommerce-detail/
 | `ModuleNotFoundError` | Activate venv: `source backend/.venv/bin/activate` |
 | Port 8000 in use | `lsof -i :8000` then `kill <PID>` |
 | Port 5173 in use | `lsof -i :5173` then `kill <PID>` |
-| Database empty | Re-run: `cd backend && python -m app.seed` |
+| Data files missing | Re-run: `cd backend && python -m app.seed` |
 | CORS error | Verify backend CORS allows `http://localhost:5173` |
 | Frontend blank | Check `VITE_API_URL` points to running backend |

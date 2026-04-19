@@ -146,47 +146,45 @@ ProductDetailPage
 ├── Breadcrumb                    ← category_path from product
 │   └── CrumbItem[]               ← each: { label, href }
 │
-├── <TwoColumnLayout>             ← CSS Grid, responsive
-│   ├── <LeftColumn>
-│   │   ├── ImageGallery          ← product.images[]
-│   │   │   ├── MainImage         ← images[selectedIdx]
-│   │   │   └── ThumbnailStrip    ← images.map(...)
-│   │   │
-│   │   ├── ProductDescription    ← product.description
-│   │   │
-│   │   └── ProductSpecs          ← product.specs[]
-│   │       └── SpecRow[]         ← each: { key, value }
+├── <ThreeColumnLayout>           ← CSS Grid: 440px | 1fr | 320px
+│   ├── <Column1: Gallery>
+│   │   └── ImageGallery          ← product.images[]
+│   │       ├── ThumbsVertical    ← vertical strip, 52px wide, hover-to-switch
+│   │       └── MainImage         ← images[selectedIdx], counter overlay
 │   │
-│   └── <RightColumn>
-│       ├── PriceBlock            ← product.price, product.original_price, product.discount
-│       │   ├── CurrentPrice
-│       │   ├── OriginalPrice     ← strikethrough
-│       │   ├── DiscountBadge
-│       │   └── InstallmentInfo
-│       │
-│       ├── StockShipping         ← product.stock, product.shipping
-│       │   ├── StockBadge        ← green check + "In Stock"
-│       │   ├── ShippingBadge     ← truck icon + "Free Shipping"
-│       │   └── DeliveryEstimate  ← date range
-│       │
-│       ├── SellerCard            ← product.seller
-│       │   ├── OfficialBadge     ← conditional on seller.is_official
-│       │   ├── SellerName
-│       │   └── StoreLink
-│       │
-│       └── PaymentMethods        ← paymentMethods[]
-│           ├── InstallmentBanner ← "up to 12 installments"
-│           └── MethodGroup[]     ← by type: credit, debit, wallet
+│   ├── <Column2: Product Info>
+│   │   ├── OfficialBadge         ← conditional: "★ Official {seller.name}"
+│   │   ├── ProductTitle          ← h1, 22px
+│   │   ├── ProductRating         ← stars + number + review count link
+│   │   ├── PriceBlock            ← current/original/discount/installments
+│   │   ├── InfoHighlights        ← top 3 specs with ✓ icons
+│   │   └── ViewCharsLink         ← anchor to #specs section
+│   │
+│   └── <Column3: Purchase Panel>
+│       ├── StockShipping         ← free shipping badge + stock dot + quantity
+│       │   ├── ShippingBadge     ← truck SVG + "Free shipping" (green bg)
+│       │   ├── StockInfo         ← green dot + "In stock" + qty available
+│       │   └── QuantityRow       ← "Quantity: 1 unit"
+│       ├── PurchaseActions       ← "Buy now" + "Add to cart" buttons
+│       ├── SellerCard            ← official badge + name + sales + link
+│       ├── BuyerProtection       ← 3 items: 🛡️🔄🏆
+│       └── PaymentMethods        ← installment banner + card icons + expand
 │
-├── ReviewsSection                ← reviews[]
-│   ├── ReviewSummary             ← average, total, distribution
-│   │   ├── AverageDisplay
-│   │   └── StarDistribution      ← bar chart: 5★ to 1★
-│   └── ReviewCard[]              ← individual reviews
-│       ├── UserInfo              ← avatar, name, date
-│       ├── RatingStars
-│       ├── ReviewTitle
-│       └── ReviewContent
+├── ProductSpecs                  ← product.specs[], expandable 2-col grid
+│   ├── SpecsGrid                 ← 2-column CSS Grid
+│   └── ExpandButton              ← "View all characteristics"
+│
+├── ProductDescription            ← product.description, full width
+│
+└── ReviewsSection                ← reviews[]
+    ├── ReviewSummary             ← average, total, distribution (sticky left)
+    │   ├── AverageDisplay        ← 48px number + stars
+    │   └── StarDistribution      ← bar chart: 5★ to 1★
+    └── ReviewCard[]              ← individual reviews (right column)
+        ├── UserInfo              ← avatar, name, date
+        ├── RatingStars
+        ├── ReviewTitle
+        └── ReviewContent
 ```
 
 ---
@@ -300,21 +298,21 @@ interface PriceBlockProps {
   originalPrice: number;
   currency: string;
   discountPercentage: number;
-  installments: { count: number; amount: number; interestFree: boolean };
+  installments: { count: number; amount: number; interest_free: boolean };
 }
 
 interface StockShippingProps {
-  stock: ProductData['stock'];
-  shipping: ProductData['shipping'];
+  stock: number;
+  freeShipping: boolean;
+  warrantyMonths: number;
 }
 
 interface SellerCardProps {
-  seller: SellerSummary;
+  seller: SellerBrief;
 }
 
 interface PaymentMethodsProps {
-  methods: PaymentMethodData[];
-  maxInstallments: number;
+  methods: PaymentMethod[];
 }
 
 interface ProductSpecsProps {
@@ -325,11 +323,6 @@ interface ReviewsSectionProps {
   reviews: ReviewData[];
   summary: ReviewListResponse['summary'];
   pagination: ReviewListResponse['pagination'];
-  onLoadMore: () => void;
-}
-
-interface ReviewCardProps {
-  review: ReviewData;
 }
 ```
 

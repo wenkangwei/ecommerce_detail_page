@@ -3,9 +3,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
-from app.database import init_db
+from app.database import init_store
 from app.routers import payments, products, reviews, sellers
 from app.schemas import ApiResponse, HealthData
 
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    init_store()
     logger.info("Application started")
     yield
     logger.info("Application shutting down")
