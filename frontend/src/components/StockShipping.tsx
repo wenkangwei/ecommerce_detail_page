@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface StockShippingProps {
   stock: number;
   freeShipping: boolean;
@@ -5,6 +7,9 @@ interface StockShippingProps {
 }
 
 export default function StockShipping({ stock, freeShipping, warrantyMonths }: StockShippingProps) {
+  const [qty, setQty] = useState(1);
+  const maxQty = Math.min(stock, 10);
+
   return (
     <div className="purchase-shipping">
       {freeShipping && (
@@ -18,13 +23,29 @@ export default function StockShipping({ stock, freeShipping, warrantyMonths }: S
       <div className="stock-info">
         <span className={`stock-dot ${stock > 0 ? 'in-stock' : 'out-stock'}`} />
         <span className="stock-text">{stock > 0 ? 'In stock' : 'Out of stock'}</span>
-        {stock > 0 && <span className="stock-qty">{stock} available</span>}
+        {stock > 0 && stock <= 5 && <span className="stock-qty">Only {stock} available</span>}
       </div>
-      <div className="quantity-row">
-        <span className="qty-label">Quantity:</span>
-        <span className="qty-value">1</span>
-        <span className="qty-unit">unit</span>
-      </div>
+      {stock > 0 && (
+        <div className="quantity-row">
+          <span className="qty-label">Quantity:</span>
+          <div className="qty-selector">
+            <button
+              className="qty-btn"
+              onClick={() => setQty(Math.max(1, qty - 1))}
+              disabled={qty <= 1}
+              aria-label="Decrease quantity"
+            >−</button>
+            <span className="qty-value">{qty}</span>
+            <button
+              className="qty-btn"
+              onClick={() => setQty(Math.min(maxQty, qty + 1))}
+              disabled={qty >= maxQty}
+              aria-label="Increase quantity"
+            >+</button>
+          </div>
+          <span className="qty-unit">({stock} available)</span>
+        </div>
+      )}
     </div>
   );
 }
