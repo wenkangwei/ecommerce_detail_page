@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.database import init_store
 from app.routers import payments, products, reviews, sellers
@@ -39,6 +40,8 @@ app.include_router(products.router, prefix="/api/v1")
 app.include_router(sellers.router, prefix="/api/v1")
 app.include_router(reviews.router, prefix="/api/v1")
 app.include_router(payments.router, prefix="/api/v1")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/health", response_model=ApiResponse[HealthData])

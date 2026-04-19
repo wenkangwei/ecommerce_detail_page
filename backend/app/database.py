@@ -34,7 +34,7 @@ def save_store(name: str, data: list[dict]) -> None:
 
 def init_store() -> None:
     """Load all collections into memory at startup."""
-    for name in ("products", "sellers", "reviews", "payment_methods"):
+    for name in ("products", "sellers", "reviews", "payment_methods", "product_images", "product_specs", "related_products", "brand_products"):
         STORE[name] = load_store(name)
         logger.info("Loaded %d %s from JSON", len(STORE[name]), name)
 

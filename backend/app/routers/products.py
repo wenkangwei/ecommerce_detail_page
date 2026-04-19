@@ -13,6 +13,7 @@ from app.schemas import (
     ProductList,
     ProductListItem,
     ProductSpecOut,
+    RelatedProductOut,
     SellerBrief,
 )
 
@@ -23,20 +24,35 @@ def _make_product_detail(p: dict) -> ProductDetail:
     """Assemble a full product detail from flat JSON data."""
     price = p["price"]
     original = p["original_price"]
-    discount = int(round((1 - price / original) * 100)) if original > 0 else 0
-    installment_count = 10
-    installment_amount = round(price / installment_count, 2)
+
+    # Use discount from product data if available, otherwise calculate
+    discount = p.get("discount_percentage", 0)
+    if not discount and original > 0:
+        discount = int(round((1 - price / original) * 100))
+
+    # Installments from product data or calculate
+    inst_data = p.get("installments")
+    if inst_data:
+        installments = InstallmentInfo(**inst_data)
+    else:
+        installment_count = 10
+        installment_amount = round(price / installment_count, 2)
+        installments = InstallmentInfo(count=installment_count, amount=installment_amount)
 
     # Resolve seller
     seller_raw = find_by_id("sellers", p["seller_id"])
     seller = SellerBrief(**seller_raw) if seller_raw else SellerBrief(id=0, name="Unknown", is_official=False, reputation="", location="", logo_url="")
 
-    # Category path
+    # Category path from product data or generate
     category_path = []
-    if p.get("category"):
-        category_path.append(CategoryItem(id=1, name=p["category"], slug=p["category"].lower().replace(" ", "-")))
-    if p.get("subcategory"):
-        category_path.append(CategoryItem(id=2, name=p["subcategory"], slug=p["subcategory"].lower().replace(" ", "-")))
+    if p.get("category_path"):
+        for cp in p["category_path"]:
+            category_path.append(CategoryItem(**cp))
+    else:
+        if p.get("category"):
+            category_path.append(CategoryItem(id=1, name=p["category"], slug=p["category"].lower().replace(" ", "-")))
+        if p.get("subcategory"):
+            category_path.append(CategoryItem(id=2, name=p["subcategory"], slug=p["subcategory"].lower().replace(" ", "-")))
 
     # Specs
     all_specs = find_all("product_specs", product_id=p["id"])
@@ -61,11 +77,13 @@ def _make_product_detail(p: dict) -> ProductDetail:
         rating_count=p.get("rating_count", 0),
         free_shipping=p.get("free_shipping", False),
         warranty_months=p.get("warranty_months", 12),
-        installments=InstallmentInfo(count=installment_count, amount=installment_amount),
+        installments=installments,
         category_path=category_path,
         seller=seller,
         images=images,
         specs=specs,
+        color=p.get("color", ""),
+        sold_count=p.get("sold_count", 0),
     )
 
 
@@ -120,3 +138,51 @@ async def get_product(product_id: int):
         return ApiResponse(code=404, data=None, message=f"Product with id {product_id} not found")
 
     return ApiResponse(data=_make_product_detail(product))
+
+
+@router.get("/products/{product_id}/related", response_model=ApiResponse[list[RelatedProductOut]])
+async def get_related_products(product_id: int):
+    related = find_all("related_products", product_id=product_id)
+    items = []
+    for r in related:
+        inst = r.get("installments")
+        items.append(RelatedProductOut(
+            id=r["id"],
+            title=r["title"],
+            price=r["price"],
+            original_price=r["original_price"],
+            currency=r.get("currency", "US$"),
+            discount_percentage=r.get("discount_percentage", 0),
+            image_url=r.get("image_url", ""),
+            installments=InstallmentInfo(**inst) if inst else None,
+            free_shipping=r.get("free_shipping", True),
+        ))
+    return ApiResponse(data=items)
+
+
+@router.get("/products/{product_id}/brand", response_model=ApiResponse[list[RelatedProductOut]])
+async def get_brand_products(product_id: int):
+    """Get products from the same brand as the given product."""
+    product = find_by_id("products", product_id)
+    if not product:
+        return ApiResponse(data=[])
+
+    # Determine brand from category
+    brand = product.get("subcategory", "")
+    brand_items = [bp for bp in get_collection("brand_products") if bp.get("brand", "").lower() == brand.lower()]
+
+    items = []
+    for r in brand_items:
+        inst = r.get("installments")
+        items.append(RelatedProductOut(
+            id=r["id"],
+            title=r["title"],
+            price=r["price"],
+            original_price=r["original_price"],
+            currency=r.get("currency", "US$"),
+            discount_percentage=r.get("discount_percentage", 0),
+            image_url=r.get("image_url", ""),
+            installments=InstallmentInfo(**inst) if inst else None,
+            free_shipping=r.get("free_shipping", True),
+        ))
+    return ApiResponse(data=items)

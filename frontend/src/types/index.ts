@@ -15,6 +15,7 @@ export interface SellerBrief {
   reputation: string;
   location: string;
   logo_url: string;
+  sales_count?: string;
 }
 
 // ─── Product ──────────────────────────────────────────────────
@@ -28,6 +29,7 @@ export interface ProductImage {
 export interface ProductSpec {
   key: string;
   value: string;
+  icon?: string;
 }
 
 export interface CategoryItem {
@@ -62,6 +64,22 @@ export interface ProductDetail {
   seller: SellerBrief;
   images: ProductImage[];
   specs: ProductSpec[];
+  color?: string;
+  sold_count?: number;
+}
+
+// ─── Related Product ──────────────────────────────────────────
+
+export interface RelatedProduct {
+  id: number;
+  title: string;
+  price: number;
+  original_price: number;
+  currency: string;
+  discount_percentage: number;
+  image_url: string;
+  installments: InstallmentInfo;
+  free_shipping: boolean;
 }
 
 // ─── Review ───────────────────────────────────────────────────

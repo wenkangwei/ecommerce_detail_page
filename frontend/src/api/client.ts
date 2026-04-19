@@ -1,4 +1,4 @@
-import type { ApiResponse, ProductDetail, ReviewListResponse, PaymentMethod } from '../types';
+import type { ApiResponse, ProductDetail, ReviewListResponse, PaymentMethod, RelatedProduct } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api/v1';
 
@@ -30,4 +30,12 @@ export function fetchReviews(
 
 export function fetchPaymentMethods(): Promise<PaymentMethod[]> {
   return apiFetch<PaymentMethod[]>('/payment-methods');
+}
+
+export function fetchRelatedProducts(productId: string): Promise<RelatedProduct[]> {
+  return apiFetch<RelatedProduct[]>(`/products/${productId}/related`);
+}
+
+export function fetchBrandProducts(productId: string): Promise<RelatedProduct[]> {
+  return apiFetch<RelatedProduct[]>(`/products/${productId}/brand`);
 }

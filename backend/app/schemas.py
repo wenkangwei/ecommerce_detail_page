@@ -22,6 +22,7 @@ class SellerBrief(BaseModel):
     reputation: str
     location: str
     logo_url: str
+    sales_count: str = ""
 
     model_config = {"from_attributes": True}
 
@@ -91,6 +92,8 @@ class ProductDetail(BaseModel):
     seller: SellerBrief
     images: list[ProductImageOut] = []
     specs: list[ProductSpecOut] = []
+    color: str = ""
+    sold_count: int = 0
 
     model_config = {"from_attributes": True}
 
@@ -170,3 +173,19 @@ class PaymentMethodOut(BaseModel):
 class HealthData(BaseModel):
     status: str = "healthy"
     version: str = "1.0.0"
+
+
+# ── Related / Brand Products ──────────────────────────────────
+
+class RelatedProductOut(BaseModel):
+    id: int
+    title: str
+    price: float
+    original_price: float
+    currency: str = "US$"
+    discount_percentage: int = 0
+    image_url: str = ""
+    installments: InstallmentInfo | None = None
+    free_shipping: bool = True
+
+    model_config = {"from_attributes": True}

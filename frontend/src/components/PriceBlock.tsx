@@ -8,35 +8,31 @@ interface PriceBlockProps {
   installments: InstallmentInfo;
 }
 
-export default function PriceBlock({
-  price,
-  originalPrice,
-  currency,
-  discountPercentage,
-  installments,
-}: PriceBlockProps) {
+export default function PriceBlock({ price, originalPrice, currency, discountPercentage, installments }: PriceBlockProps) {
   return (
     <div className="price-block">
-      <div className="price-row">
-        {discountPercentage > 0 && (
-          <span className="price-original">
-            {currency} {originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          </span>
-        )}
+      {discountPercentage > 0 && (
+        <div className="price-original-row">
+          <span className="price-original">{currency} {originalPrice.toLocaleString('es-AR')}</span>
+        </div>
+      )}
+
+      <div className="price-current-row">
+        <span className="price-current">{currency} {price.toLocaleString('es-AR')}</span>
         {discountPercentage > 0 && (
           <span className="price-discount">{discountPercentage}% OFF</span>
         )}
       </div>
-      <div className="price-current">
-        {currency} {price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-      </div>
+
       {installments && (
         <div className="price-installments">
-          in <strong>{installments.count} installments</strong> of {currency}{' '}
-          {installments.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}{' '}
-          {installments.interest_free && <span className="interest-free">without interest</span>}
+          en <span className="installment-count">{installments.count} cuotas</span> de{' '}
+          <span className="installment-amount">$ {installments.amount.toLocaleString('es-AR', { minimumFractionDigits: 0 })}</span>
+          {installments.interest_free && <span className="interest-free"> sin interés</span>}
         </div>
       )}
+
+      <a href="#medios-pago" className="payment-link">Ver medios de pago y promociones</a>
     </div>
   );
 }

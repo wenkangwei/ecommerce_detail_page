@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchProduct, fetchReviews, fetchPaymentMethods } from '../api/client';
-import type { ProductDetail, ReviewListResponse, PaymentMethod } from '../types';
+import { fetchProduct, fetchReviews, fetchPaymentMethods, fetchRelatedProducts, fetchBrandProducts } from '../api/client';
+import type { ProductDetail, ReviewListResponse, PaymentMethod, RelatedProduct } from '../types';
+import TopBar from '../components/TopBar';
 import Breadcrumb from '../components/Breadcrumb';
 import ImageGallery from '../components/ImageGallery';
-import PriceBlock from '../components/PriceBlock';
-import StockShipping from '../components/StockShipping';
+import ProductInfo from '../components/ProductInfo';
+import PurchasePanel from '../components/PurchasePanel';
 import SellerCard from '../components/SellerCard';
 import PaymentMethods from '../components/PaymentMethods';
 import ProductSpecs from '../components/ProductSpecs';
+import ProductDescription from '../components/ProductDescription';
+import RelatedProducts from '../components/RelatedProducts';
+import SidebarRelatedProducts from '../components/SidebarRelatedProducts';
 import ReviewsSection from '../components/ReviewsSection';
 
 export default function ProductDetailPage() {
@@ -16,7 +20,8 @@ export default function ProductDetailPage() {
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [reviewData, setReviewData] = useState<ReviewListResponse | null>(null);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
+  const [brandProducts, setBrandProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,11 +30,12 @@ export default function ProductDetailPage() {
     setLoading(true);
     setError(null);
 
-    Promise.all([fetchProduct(id), fetchReviews(id), fetchPaymentMethods()])
-      .then(([prod, revs, payments]) => {
+    Promise.all([fetchProduct(id), fetchReviews(id), fetchRelatedProducts(id), fetchBrandProducts(id)])
+      .then(([prod, revs, related, brand]) => {
         setProduct(prod);
         setReviewData(revs);
-        setPaymentMethods(payments);
+        setRelatedProducts(related);
+        setBrandProducts(brand);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -39,7 +45,7 @@ export default function ProductDetailPage() {
     return (
       <div className="page-loading">
         <div className="loading-spinner" />
-        <p>Loading product details...</p>
+        <p>Cargando producto...</p>
       </div>
     );
   }
@@ -47,9 +53,9 @@ export default function ProductDetailPage() {
   if (error) {
     return (
       <div className="page-error">
-        <h2>Oops! Something went wrong</h2>
+        <h2>Oops! Algo salió mal</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Try Again</button>
+        <button onClick={() => window.location.reload()}>Reintentar</button>
       </div>
     );
   }
@@ -58,111 +64,60 @@ export default function ProductDetailPage() {
 
   return (
     <div className="product-page">
+      <TopBar />
+
       <div className="product-container">
         <Breadcrumb items={product.category_path} productName={product.title} />
 
-        {/* ── Main 3-column layout ────────────────────── */}
-        <div className="product-main">
-          {/* Column 1: Image Gallery (thumbnails + main image) */}
-          <div className="product-col-gallery">
-            <ImageGallery images={product.images} />
-          </div>
+        <div className="main-card">
+          <div className="product-main">
+            <div className="product-col-gallery">
+              <ImageGallery images={product.images} />
+            </div>
 
-          {/* Column 2: Product Information */}
-          <div className="product-col-info">
-            {product.seller.is_official && (
-              <div className="info-official-badge">
-                <span className="badge-icon">★</span> Official {product.seller.name}
-              </div>
+            <div className="product-col-info">
+              <ProductInfo product={product} />
+            </div>
+
+            <div className="product-col-purchase">
+              <PurchasePanel product={product} />
+              <SellerCard seller={product.seller} />
+              <PaymentMethods />
+            </div>
+          </div>
+        </div>
+
+        <div className="below-main">
+          <div className="below-main-left">
+            {relatedProducts.length > 0 && (
+              <RelatedProducts title="Productos relacionados" products={relatedProducts} />
             )}
 
-            <h1 className="product-title">{product.title}</h1>
+            {brandProducts.length > 0 && (
+              <RelatedProducts title={`Productos de ${product.seller.name}`} products={brandProducts} />
+            )}
 
-            <div className="product-rating">
-              <span className="stars">{'★'.repeat(Math.round(product.rating_avg))}{'☆'.repeat(5 - Math.round(product.rating_avg))}</span>
-              <span className="rating-value">{product.rating_avg}</span>
-              <span className="rating-count">({product.rating_count} reviews)</span>
+            <div id="caracteristicas">
+              <ProductSpecs specs={product.specs} />
             </div>
 
-            <PriceBlock
-              price={product.price}
-              originalPrice={product.original_price}
-              currency={product.currency}
-              discountPercentage={product.discount_percentage}
-              installments={product.installments}
-            />
+            <ProductDescription description={product.description} />
 
-            <div className="info-highlights">
-              <ul>
-                {product.specs.slice(0, 3).map((s, i) => (
-                  <li key={i}><span className="hl-icon">✓</span> <strong>{s.key}:</strong> {s.value}</li>
-                ))}
-              </ul>
-            </div>
-
-            <a href="#specs" className="view-chars-link">View characteristics</a>
+            {reviewData && (
+              <div id="reviews">
+                <ReviewsSection
+                  reviews={reviewData.items}
+                  summary={reviewData.summary}
+                  pagination={reviewData.pagination}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Column 3: Purchase Panel */}
-          <div className="product-col-purchase">
-            <StockShipping
-              stock={product.stock}
-              freeShipping={product.free_shipping}
-              warrantyMonths={product.warranty_months}
-            />
-
-            <div className="purchase-actions">
-              <button className="btn-buy-now">Buy now</button>
-              <button className="btn-add-cart">Add to cart</button>
-            </div>
-
-            <SellerCard seller={product.seller} />
-
-            <div className="purchase-protection">
-              <div className="protect-item">
-                <span className="protect-icon">🛡️</span>
-                <div>
-                  <span className="protect-title">Buyer protection</span>
-                  <span className="protect-desc">Receive the product or get your money back</span>
-                </div>
-              </div>
-              <div className="protect-item">
-                <span className="protect-icon">🔄</span>
-                <div>
-                  <span className="protect-title">Free returns</span>
-                  <span className="protect-desc">30 days to return</span>
-                </div>
-              </div>
-              <div className="protect-item">
-                <span className="protect-icon">🏆</span>
-                <div>
-                  <span className="protect-title">Factory warranty</span>
-                  <span className="protect-desc">{product.warranty_months} months</span>
-                </div>
-              </div>
-            </div>
-
-            <PaymentMethods methods={paymentMethods} />
+          <div className="below-main-right">
+            <SidebarRelatedProducts products={relatedProducts} />
           </div>
         </div>
-
-        {/* ── Below main content ──────────────────────── */}
-        <div id="specs">
-          <ProductSpecs specs={product.specs} />
-        </div>
-
-        <div className="product-section">
-          <h2 className="section-title">Product description</h2>
-          <p className="product-description">{product.description}</p>
-        </div>
-
-        {reviewData && (
-          <ReviewsSection
-            reviews={reviewData.items}
-            summary={reviewData.summary}
-            pagination={reviewData.pagination}
-          />
-        )}
       </div>
     </div>
   );
